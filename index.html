@@ -1,1 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Devis Mariziki</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    h1, h2 {
+      color: #d4af37;
+    }
+    .section {
+      margin-bottom: 2rem;
+    }
+    label {
+      display: block;
+      margin: 0.5rem 0;
+    }
+    .item {
+      margin: 0.5rem 0;
+    }
+    .total {
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      background-color: black;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Créer un Devis - Mariziki</h1>
 
+  <div class="section">
+    <h2>Informations Client</h2>
+    <label>Nom: <input type="text" id="clientName"></label>
+    <label>Téléphone: <input type="text" id="clientPhone"></label>
+    <label>Email: <input type="email" id="clientEmail"></label>
+    <label>Date prestation: <input type="date" id="serviceDate"></label>
+    <label>Nombre de personnes: <input type="number" id="numPersons" min="1"></label>
+  </div>
+
+  <div class="section">
+    <h2>Prestations</h2>
+    <div class="item">
+      <input type="checkbox" id="samboussa" data-price="0.6"> Samboussa (0,60 €)
+      <input type="number" id="qty_samboussa" value="0" min="0">
+    </div>
+    <div class="item">
+      <input type="checkbox" id="brochette" data-price="1"> Brochette (1 €)
+      <input type="number" id="qty_brochette" value="0" min="0">
+    </div>
+    <div class="item">
+      <input type="checkbox" id="tiramisu" data-price="5"> Tiramisu (5 €)
+      <input type="number" id="qty_tiramisu" value="0" min="0">
+    </div>
+    <!-- Ajoute ici tous les autres produits avec leur prix et ID -->
+  </div>
+
+  <div class="section">
+    <button class="btn" onclick="generatePDF()">Générer le devis PDF</button>
+    <div class="total" id="totalDisplay">Total HT : 0 €</div>
+  </div>
+
+  <script>
+    function generatePDF() {
+      const {{ jsPDF }} = window.jspdf;
+      const doc = new jsPDF();
+
+      let y = 10;
+      doc.text("Devis Mariziki", 10, y); y += 10;
+
+      const clientName = document.getElementById("clientName").value;
+      const phone = document.getElementById("clientPhone").value;
+      const email = document.getElementById("clientEmail").value;
+      const date = document.getElementById("serviceDate").value;
+      const persons = document.getElementById("numPersons").value;
+
+      doc.text(`Client: ${clientName}`, 10, y); y += 10;
+      doc.text(`Téléphone: ${phone} | Email: ${email}`, 10, y); y += 10;
+      doc.text(`Date prestation: ${date} | Nombre de personnes: ${persons}`, 10, y); y += 10;
+
+      doc.text("Prestations:", 10, y); y += 10;
+
+      let total = 0;
+
+      ["samboussa", "brochette", "tiramisu"].forEach(id => {
+        const checkbox = document.getElementById(id);
+        const qty = parseInt(document.getElementById(`qty_${id}`).value);
+        const price = parseFloat(checkbox.dataset.price);
+        if (checkbox.checked && qty > 0) {
+          const lineTotal = qty * price;
+          doc.text(`- ${id} x${qty} = ${lineTotal.toFixed(2)} €`, 10, y);
+          y += 10;
+          total += lineTotal;
+        }
+      });
+
+      doc.text(`Total HT : ${total.toFixed(2)} €`, 10, y); y += 10;
+      doc.text(`TVA non applicable – art. 293B du CGI`, 10, y); y += 10;
+      doc.text(`Total TTC : ${total.toFixed(2)} €`, 10, y);
+
+      doc.save("devis_mariziki.pdf");
+    }
+  </script>
+</body>
+</html>
